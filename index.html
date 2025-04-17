@@ -47,114 +47,103 @@
 
   <div class="info">
     <p>Cookies: <span id="cookies">0</span></p>
+    <p>World: <span id="world">Candy Cookie World</span></p>
+    <p>Click Multiplier: <span id="clickMultiplier">1</span>x</p>
   </div>
 
   <div id="statsSection" style="display: none;">
     <div class="info">
       <p>Clicks: <span id="clicks">0</span></p>
       <p>CPS: <span id="cps">0</span></p>
-      <p>Stage: <span id="stage">1</span></p>
     </div>
   </div>
 
   <div id="shopSidebar">
     <h2>Shop</h2>
     <div id="itemsList"></div>
-    <button onclick="toggleShop()">Close Shop</button>
+    <h3>Upgrades</h3>
+    <div id="upgradesList"></div>
+    <h3>Worlds</h3>
+    <button onclick="goToWorld('Candy Cookie World')">Candy Cookie World</button>
+    <button onclick="goToWorld('Chocolate Land')">Chocolate Land</button>
   </div>
 
   <script>
-    let game = null;
+    const data = {
+      "player": {
+        "cookies": 0,
+        "currentWorld": "Candy Cookie World",
+        "clickMultiplier": 1,
+        "worldsUnlocked": ["Candy Cookie World"]
+      },
+      "worlds": [
+        { "name": "Candy Cookie World", "unlocked": true, "clickMultiplier": 1 },
+        { "name": "Chocolate Land", "unlocked": false, "clickMultiplier": 1.5 }
+      ],
+      "items": [
+        { "id": "cursor", "name": "Cursor", "amountOwned": 0, "baseCost": 15, "cps": 0.1 },
+        { "id": "grandma", "name": "Grandma", "amountOwned": 0, "baseCost": 100, "cps": 1 }
+      ]
+    };
 
-    async function loadJSON() {
-      const response = await fetch("data.json");
-      const data = await response.json();
-      game = data;
-      calculateCPS();
-      updateUI();
-      updateShopVisibility();
-      updateStatsVisibility();
-    }
-
-    function clickCookie() {
-      game.player.cookies += 1;
-      game.player.totalClicks++;
-      updateUI();
-    }
-
-    function updateUI() {
-      document.getElementById("cookies").textContent = Math.floor(game.player.cookies);
-      document.getElementById("clicks").textContent = game.player.totalClicks;
-      document.getElementById("cps").textContent = game.player.cookiesPerSecond.toFixed(1);
-      document.getElementById("stage").textContent = game.player.currentStage;
-
-      const itemsList = document.getElementById("itemsList");
-      itemsList.innerHTML = "";
-
-      game.items.forEach(item => {
-        const btn = document.createElement("button");
-        btn.textContent = `${item.name} (${item.amountOwned}) - ${item.baseCost} cookies`;
-        btn.onclick = () => buyItem(item.id);
-        itemsList.appendChild(btn);
-      });
-    }
-
-    function buyItem(id) {
-      const item = game.items.find(i => i.id === id);
-      if (game.player.cookies >= item.baseCost) {
-        game.player.cookies -= item.baseCost;
-        item.amountOwned++;
-        item.bought++;
-        item.baseCost = Math.floor(item.baseCost * 1.15);
-        calculateCPS();
-        updateUI();
-      }
-    }
-
-    function calculateCPS() {
-      let cps = 0;
-      game.items.forEach(item => {
-        cps += item.amountOwned * item.cps;
-      });
-      game.player.cookiesPerSecond = cps;
-    }
+    let currentWorld = data.player.currentWorld;
+    let upgradesList = [];
+    let itemsList = [];
 
     function toggleShop() {
-      game.shopOpen = !game.shopOpen;
-      updateShopVisibility();
-    }
-
-    function updateShopVisibility() {
-      const shopSidebar = document.getElementById("shopSidebar");
-      if (game.shopOpen) {
-        shopSidebar.classList.add("open");
-      } else {
-        shopSidebar.classList.remove("open");
-      }
+      const sidebar = document.getElementById('shopSidebar');
+      sidebar.classList.toggle('open');
+      updateShop();
     }
 
     function toggleStats() {
-      game.statsVisible = !game.statsVisible;
-      updateStatsVisibility();
+      const statsSection = document.getElementById('statsSection');
+      statsSection.style.display = statsSection.style.display === 'none' ? 'block' : 'none';
     }
 
-    function updateStatsVisibility() {
-      const statsSection = document.getElementById("statsSection");
-      if (game.statsVisible) {
-        statsSection.style.display = "block";
-      } else {
-        statsSection.style.display = "none";
+    function updateShop() {
+      const itemsDiv = document.getElementById('itemsList');
+      const upgradesDiv = document.getElementById('upgradesList');
+      itemsDiv.innerHTML = '';
+      upgradesDiv.innerHTML = '';
+
+      // Display items
+      data.items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('shop-item');
+        itemElement.innerHTML = `${item.name} - Cost: ${item.baseCost} cookies`;
+        itemsDiv.appendChild(itemElement);
+      });
+
+      // Display upgrades for the current world
+      const world = data.worlds.find(w => w.name === currentWorld);
+      const upgrades = world ? world.upgrades : [];
+      upgrades.forEach(upgrade => {
+        const upgradeElement = document.createElement('div');
+        upgradeElement.classList.add('shop-item');
+        upgradeElement.innerHTML = `${upgrade.name} - Cost: ${upgrade.cost} cookies`;
+        upgradesDiv.appendChild(upgradeElement);
+      });
+    }
+
+    function clickCookie() {
+      const cookies = document.getElementById('cookies');
+      data.player.cookies += 1 * data.player.clickMultiplier;
+      cookies.textContent = data.player.cookies;
+    }
+
+    function goToWorld(worldName) {
+      const world = data.worlds.find(w => w.name === worldName);
+      if (world && world.unlocked) {
+        currentWorld = worldName;
+        data.player.currentWorld = worldName;
+        document.getElementById('world').textContent = worldName;
+        document.getElementById('clickMultiplier').textContent = world.clickMultiplier;
+        updateShop();
       }
     }
 
-    setInterval(() => {
-      if (game) {
-        game.player.cookies += game.player.cookiesPerSecond / 10;
-        updateUI();
-      }
-    }, 100);
-
-    loadJSON();
+    updateShop();
   </script>
 </body>
 </html>
