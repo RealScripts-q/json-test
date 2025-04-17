@@ -3,24 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Key Generator</title>
+    <title>Game System with API Key</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px; margin-top: 10px; }
         button:hover { background-color: #45a049; }
-        .key-container { margin-top: 20px; }
-        .api-key { font-family: monospace; background-color: #f4f4f4; padding: 10px; border: 1px solid #ccc; word-wrap: break-word; }
+        .error { color: red; font-size: 18px; }
+        .game-container { display: none; margin-top: 20px; }
+        .mod-menu { display: none; margin-top: 20px; }
+        .game-info { margin-top: 20px; }
+        .game-list { margin-top: 20px; }
+        .game-list button { margin: 5px; }
     </style>
 </head>
 <body>
 
-    <h1>API Key Generator</h1>
-    <p>Click the button below to generate a new API key.</p>
+    <h1>Game System with API Key</h1>
+
     <button id="generateKeyButton">Generate API Key</button>
 
+    <div class="error" id="errorMessage"></div>
+
     <div class="key-container">
-        <p><strong>Generated API Key:</strong></p>
+        <p><strong>Your API Key:</strong></p>
         <div id="apiKey" class="api-key">No key generated yet.</div>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <h2>Choose a Game to Play</h2>
+        <div class="game-list" id="gameList">
+            <button class="gameButton" onclick="startGame('game1')">Game 1</button>
+            <button class="gameButton" onclick="startGame('game2')">Game 2</button>
+            <button class="gameButton" onclick="startGame('game3')">Game 3</button>
+            <button class="gameButton" onclick="startGame('game4')">Game 4</button>
+            <button class="gameButton" onclick="startGame('game5')">Game 5</button>
+            <button class="gameButton" onclick="startGame('game6')">Game 6</button>
+            <button class="gameButton" onclick="startGame('game7')">Game 7</button>
+            <button class="gameButton" onclick="startGame('game8')">Game 8</button>
+            <button class="gameButton" onclick="startGame('game9')">Game 9</button>
+            <button class="gameButton" onclick="startGame('game10')">Game 10</button>
+        </div>
+
+        <div class="mod-menu" id="modMenu">
+            <h3>Mod Menu</h3>
+            <button onclick="modGame('speed')">Increase Speed</button>
+            <button onclick="modGame('score')">Increase Score</button>
+            <button onclick="modGame('difficulty')">Increase Difficulty</button>
+        </div>
+    </div>
+
+    <div class="validation-container">
+        <h2>Enter Your API Key to Validate</h2>
+        <input type="text" id="apiKeyInput" placeholder="Enter API Key">
+        <button id="validateButton">Validate API Key</button>
     </div>
 
     <script>
@@ -29,25 +64,65 @@
             return 'api_' + Math.random().toString(36).substr(2, 32);
         }
 
+        // Function to check if the user already has an API key
+        function checkForExistingKey() {
+            let keys = JSON.parse(localStorage.getItem('userKeys')) || {};
+            return keys.apikey ? true : false;
+        }
+
         // When the button is clicked, generate and store the key in localStorage
         document.getElementById('generateKeyButton').addEventListener('click', function() {
+            if (checkForExistingKey()) {
+                // If the user already has an API key, show an error message
+                document.getElementById('errorMessage').textContent = 'You have already generated your API key. You cannot generate another one.';
+                return;
+            }
+            
             const newApiKey = generateApiKey();
             
             // Store the generated API key in localStorage
-            let keys = JSON.parse(localStorage.getItem('keys')) || {};
-            keys.apikey = newApiKey;
-            localStorage.setItem('keys', JSON.stringify(keys));
+            let keys = { apikey: newApiKey };
+            localStorage.setItem('userKeys', JSON.stringify(keys));
 
             // Display the generated key
             document.getElementById('apiKey').textContent = newApiKey;
+
+            // Show the game list and mod menu
+            document.getElementById('gameContainer').style.display = 'block';
         });
 
-        // Check if there is an existing key in localStorage and display it
+        // Check if the user already has an API key on page load
         window.onload = function() {
-            let keys = JSON.parse(localStorage.getItem('keys')) || {};
+            let keys = JSON.parse(localStorage.getItem('userKeys')) || {};
             if (keys.apikey) {
                 document.getElementById('apiKey').textContent = keys.apikey;
+                document.getElementById('gameContainer').style.display = 'block';  // Show the game list
             }
+        }
+
+        // Validate API key entered by the user
+        document.getElementById('validateButton').addEventListener('click', function() {
+            const userKey = document.getElementById('apiKeyInput').value;
+            let keys = JSON.parse(localStorage.getItem('userKeys')) || {};
+            if (userKey === keys.apikey) {
+                document.getElementById('errorMessage').textContent = 'API Key is valid! You can now play and mod the games.';
+                document.getElementById('gameContainer').style.display = 'block';
+                document.getElementById('modMenu').style.display = 'block';
+            } else {
+                document.getElementById('errorMessage').textContent = 'Invalid API Key. Please generate a valid one first.';
+            }
+        });
+
+        // Start a specific game
+        function startGame(game) {
+            alert(`Starting ${game}...`);
+            // Add game logic here, based on the game selected
+        }
+
+        // Modifying the game using the mod menu
+        function modGame(modType) {
+            alert(`Applying mod: ${modType}`);
+            // Implement mods based on the mod type (speed, score, difficulty)
         }
     </script>
 
