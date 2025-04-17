@@ -1,1 +1,19 @@
-[]
+{
+  "books": [
+    {
+      "id": "",
+      "title": "",
+      "author": "",
+      "content": "",
+      "visibility": "",
+      "apiKey": "",
+      "publishedAt": ""
+    }
+  ],
+  "context": {
+    "description": "This JSON file stores all published books for the Book Creator app.",
+    "lastUpdated": "",
+    "version": "1.0",
+    "notes": "Each book has visibility (public or protected), and an API key only if protected."
+  }
+}
