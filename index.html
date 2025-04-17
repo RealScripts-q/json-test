@@ -2,125 +2,96 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Book Creator</title>
+  <title>Cookie Clicker w/ JSON</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .hidden { display: none; }
-    .book-entry { margin: 10px 0; padding: 10px; border: 1px solid #ccc; cursor: pointer; }
-    #book-reader.fullscreen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: white; padding: 40px; overflow: auto; z-index: 999;
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+    .cookie {
+      width: 150px;
+      cursor: pointer;
+    }
+    button {
+      margin: 5px;
     }
   </style>
 </head>
 <body>
+  <h1>🍪 Cookie Clicker</h1>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/Cookie.png" class="cookie" onclick="clickCookie()" />
+  
+  <div class="info">
+    <p>Cookies: <span id="cookies">0</span></p>
+    <p>Clicks: <span id="clicks">0</span></p>
+    <p>CPS: <span id="cps">0</span></p>
+    <p>Stage: <span id="stage">1</span></p>
+  </div>
 
-  <h1>Create a Book</h1>
-  <input type="text" id="title" placeholder="Title"><br>
-  <input type="text" id="author" placeholder="Author"><br>
-  <textarea id="content" placeholder="Book Content..." rows="5" cols="50"></textarea><br>
-  <select id="visibility">
-    <option value="public">Public</option>
-    <option value="protected">Protected</option>
-  </select><br>
-  <input type="text" id="key" placeholder="API Key (if protected)" disabled><br>
-  <button onclick="publishBook()">Publish Book</button>
-
-  <hr>
-  <h2>Your Dashboard</h2>
-  <div id="dashboard"></div>
-
-  <div id="book-reader" class="hidden fullscreen"></div>
+  <div id="itemsList"></div>
 
   <script>
-    const keyInput = document.getElementById("key");
-    document.getElementById("visibility").addEventListener("change", e => {
-      keyInput.disabled = e.target.value !== "protected";
-    });
+    let game = null;
 
-    let bookData = { books: [], context: {} };
-
-    async function loadBooks() {
-      try {
-        const res = await fetch("books.json");
-        bookData = await res.json();
-        renderDashboard();
-      } catch (err) {
-        console.error("Failed to load books.json:", err);
-      }
+    async function loadJSON() {
+      const response = await fetch("data.json");
+      const data = await response.json();
+      game = data;
+      calculateCPS();
+      updateUI();
     }
 
-    function renderDashboard() {
-      const dashboard = document.getElementById("dashboard");
-      dashboard.innerHTML = "";
+    function clickCookie() {
+      game.player.cookies += 1;
+      game.player.totalClicks++;
+      updateUI();
+    }
 
-      bookData.books.forEach(book => {
-        const entry = document.createElement("div");
-        entry.className = "book-entry";
-        entry.textContent = `${book.title} by ${book.author}`;
-        entry.onclick = () => readBook(book);
-        dashboard.appendChild(entry);
+    function updateUI() {
+      document.getElementById("cookies").textContent = Math.floor(game.player.cookies);
+      document.getElementById("clicks").textContent = game.player.totalClicks;
+      document.getElementById("cps").textContent = game.player.cookiesPerSecond.toFixed(1);
+      document.getElementById("stage").textContent = game.player.currentStage;
+
+      const itemsList = document.getElementById("itemsList");
+      itemsList.innerHTML = "";
+
+      game.items.forEach(item => {
+        const btn = document.createElement("button");
+        btn.textContent = `${item.name} (${item.amountOwned}) - ${item.baseCost} cookies`;
+        btn.onclick = () => buyItem(item.id);
+        itemsList.appendChild(btn);
       });
     }
 
-    function readBook(book) {
-      if (book.visibility === "protected") {
-        const input = prompt("Enter API Key:");
-        if (input !== book.apiKey) return alert("Wrong API key.");
+    function buyItem(id) {
+      const item = game.items.find(i => i.id === id);
+      if (game.player.cookies >= item.baseCost) {
+        game.player.cookies -= item.baseCost;
+        item.amountOwned++;
+        item.bought++;
+        item.baseCost = Math.floor(item.baseCost * 1.15);
+        calculateCPS();
+        updateUI();
       }
+    }
 
-      const reader = document.getElementById("book-reader");
-      reader.innerHTML = `<h1>${book.title}</h1><h3>${book.author}</h3><p>${book.content}</p>`;
-      reader.classList.remove("hidden");
-      reader.classList.add("fullscreen");
-
-      document.addEventListener("keydown", e => {
-        if (e.key === "Escape") {
-          reader.classList.add("hidden");
-          reader.classList.remove("fullscreen");
-        }
+    function calculateCPS() {
+      let cps = 0;
+      game.items.forEach(item => {
+        cps += item.amountOwned * item.cps;
       });
+      game.player.cookiesPerSecond = cps;
     }
 
-    async function publishBook() {
-      const title = document.getElementById("title").value.trim();
-      const author = document.getElementById("author").value.trim();
-      const content = document.getElementById("content").value.trim();
-      const visibility = document.getElementById("visibility").value;
-      const apiKey = visibility === "protected" ? document.getElementById("key").value.trim() : "";
-
-      if (!title || !author || !content) return alert("Fill in all fields!");
-
-      const newBook = {
-        id: Date.now(),
-        title,
-        author,
-        content,
-        visibility,
-        apiKey,
-        publishedAt: new Date().toISOString()
-      };
-
-      bookData.books.push(newBook);
-      bookData.context.lastUpdated = new Date().toISOString();
-
-      try {
-        await fetch("books.json", {
-          method: "PUT", // json-server or server must support PUT
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bookData, null, 2)
-        });
-        renderDashboard();
-        alert("Book published successfully!");
-      } catch (err) {
-        console.error("Failed to write to books.json:", err);
-        alert("Note: Cannot save to books.json without a backend or json-server.");
-        renderDashboard(); // still add to UI
+    setInterval(() => {
+      if (game) {
+        game.player.cookies += game.player.cookiesPerSecond / 10;
+        updateUI();
       }
-    }
+    }, 100);
 
-    loadBooks();
+    loadJSON();
   </script>
-
 </body>
 </html>
