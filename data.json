@@ -3,17 +3,80 @@
     "cookies": 0,
     "totalClicks": 0,
     "cookiesPerSecond": 0,
-    "currentStage": 1
+    "clickMultiplier": 1,
+    "currentWorld": "Candy Cookie World",
+    "worldsUnlocked": ["Candy Cookie World"]
   },
   "items": [
     { "id": "cursor", "name": "Cursor", "amountOwned": 0, "bought": 0, "baseCost": 15, "cps": 0.1 },
     { "id": "grandma", "name": "Grandma", "amountOwned": 0, "bought": 0, "baseCost": 100, "cps": 1 },
-    { "id": "farm", "name": "Farm", "amountOwned": 0, "bought": 0, "baseCost": 500, "cps": 8 }
+    { "id": "farm", "name": "Farm", "amountOwned": 0, "bought": 0, "baseCost": 500, "cps": 8 },
+    { "id": "mine", "name": "Mine", "amountOwned": 0, "bought": 0, "baseCost": 3000, "cps": 20 },
+    { "id": "factory", "name": "Factory", "amountOwned": 0, "bought": 0, "baseCost": 10000, "cps": 50 },
+    { "id": "bank", "name": "Bank", "amountOwned": 0, "bought": 0, "baseCost": 20000, "cps": 100 },
+    { "id": "temple", "name": "Temple", "amountOwned": 0, "bought": 0, "baseCost": 50000, "cps": 200 },
+    { "id": "robot", "name": "Robot", "amountOwned": 0, "bought": 0, "baseCost": 150000, "cps": 500 },
+    { "id": "spaceship", "name": "Spaceship", "amountOwned": 0, "bought": 0, "baseCost": 300000, "cps": 1000 }
   ],
-  "upgrades": [],
-  "stages": [
-    { "stageNumber": 1, "cookiesNeeded": 1000, "completed": false },
-    { "stageNumber": 2, "cookiesNeeded": 10000, "completed": false }
+  "upgrades": [
+    { "id": "doubleCps", "name": "Double CPS", "cost": 500, "effect": "doubleCps" },
+    { "id": "cookieMultiplier", "name": "Cookie Multiplier", "cost": 1000, "effect": "cookieMultiplier" },
+    { "id": "roboticWorkers", "name": "Robotic Workers", "cost": 5000, "effect": "roboticWorkers" }
+  ],
+  "worlds": [
+    {
+      "name": "Candy Cookie World",
+      "unlocked": true,
+      "requiredCookies": 0,
+      "clickMultiplier": 1,
+      "upgrades": [
+        { "id": "doubleCps", "name": "Double CPS", "cost": 500, "effect": "doubleCps" },
+        { "id": "cookieMultiplier", "name": "Cookie Multiplier", "cost": 1000, "effect": "cookieMultiplier" },
+        { "id": "roboticWorkers", "name": "Robotic Workers", "cost": 5000, "effect": "roboticWorkers" },
+        { "id": "extraClicks", "name": "Extra Clicks", "cost": 1500, "effect": "extraClicks" },
+        { "id": "superGrandma", "name": "Super Grandma", "cost": 2000, "effect": "superGrandma" },
+        { "id": "farmBoost", "name": "Farm Boost", "cost": 4000, "effect": "farmBoost" },
+        { "id": "mineBoost", "name": "Mine Boost", "cost": 8000, "effect": "mineBoost" },
+        { "id": "factoryBoost", "name": "Factory Boost", "cost": 16000, "effect": "factoryBoost" },
+        { "id": "bankBoost", "name": "Bank Boost", "cost": 32000, "effect": "bankBoost" },
+        { "id": "templeBoost", "name": "Temple Boost", "cost": 64000, "effect": "templeBoost" },
+        { "id": "robotBoost", "name": "Robot Boost", "cost": 128000, "effect": "robotBoost" },
+        { "id": "spaceshipBoost", "name": "Spaceship Boost", "cost": 256000, "effect": "spaceshipBoost" },
+        { "id": "doubleClicks", "name": "Double Clicks", "cost": 5000, "effect": "doubleClicks" },
+        { "id": "cookieClicker", "name": "Cookie Clicker", "cost": 10000, "effect": "cookieClicker" },
+        { "id": "clickFrenzy", "name": "Click Frenzy", "cost": 20000, "effect": "clickFrenzy" },
+        { "id": "fasterFarm", "name": "Faster Farm", "cost": 5000, "effect": "fasterFarm" },
+        { "id": "fasterMine", "name": "Faster Mine", "cost": 10000, "effect": "fasterMine" },
+        { "id": "fasterFactory", "name": "Faster Factory", "cost": 15000, "effect": "fasterFactory" },
+        { "id": "fasterBank", "name": "Faster Bank", "cost": 20000, "effect": "fasterBank" }
+      ]
+    },
+    {
+      "name": "Chocolate Land",
+      "unlocked": false,
+      "requiredCookies": 100000,
+      "clickMultiplier": 1.5,
+      "upgrades": [
+        { "id": "cookieMultiplier", "name": "Cookie Multiplier", "cost": 1500, "effect": "cookieMultiplier" },
+        { "id": "roboticWorkers", "name": "Robotic Workers", "cost": 10000, "effect": "roboticWorkers" },
+        { "id": "extraClicks", "name": "Extra Clicks", "cost": 2000, "effect": "extraClicks" },
+        { "id": "superGrandma", "name": "Super Grandma", "cost": 2500, "effect": "superGrandma" },
+        { "id": "farmBoost", "name": "Farm Boost", "cost": 5000, "effect": "farmBoost" },
+        { "id": "mineBoost", "name": "Mine Boost", "cost": 10000, "effect": "mineBoost" },
+        { "id": "factoryBoost", "name": "Factory Boost", "cost": 20000, "effect": "factoryBoost" },
+        { "id": "bankBoost", "name": "Bank Boost", "cost": 40000, "effect": "bankBoost" },
+        { "id": "templeBoost", "name": "Temple Boost", "cost": 80000, "effect": "templeBoost" },
+        { "id": "robotBoost", "name": "Robot Boost", "cost": 160000, "effect": "robotBoost" },
+        { "id": "spaceshipBoost", "name": "Spaceship Boost", "cost": 320000, "effect": "spaceshipBoost" },
+        { "id": "doubleClicks", "name": "Double Clicks", "cost": 7000, "effect": "doubleClicks" },
+        { "id": "cookieClicker", "name": "Cookie Clicker", "cost": 14000, "effect": "cookieClicker" },
+        { "id": "clickFrenzy", "name": "Click Frenzy", "cost": 28000, "effect": "clickFrenzy" },
+        { "id": "fasterFarm", "name": "Faster Farm", "cost": 6000, "effect": "fasterFarm" },
+        { "id": "fasterMine", "name": "Faster Mine", "cost": 12000, "effect": "fasterMine" },
+        { "id": "fasterFactory", "name": "Faster Factory", "cost": 18000, "effect": "fasterFactory" },
+        { "id": "fasterBank", "name": "Faster Bank", "cost": 24000, "effect": "fasterBank" }
+      ]
+    }
   ],
   "shopOpen": false,
   "statsVisible": false
