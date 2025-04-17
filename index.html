@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Books List</title>
+    <title>Books List and API Key Creator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,30 +14,132 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+        #api-key-container {
+            margin-top: 20px;
+        }
+        #validation-result {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Books List</h1>
     <div id="books-list"></div>
 
+    <h2>Add a New Book</h2>
+    <form id="book-form">
+        <input type="text" id="book-title" placeholder="Book Title" required />
+        <input type="text" id="book-author" placeholder="Book Author" required />
+        <button type="submit">Add Book</button>
+    </form>
+
+    <h2>Generate API Key</h2>
+    <button id="generate-api-key">Generate API Key</button>
+    <div id="api-key-container"></div>
+
+    <h2>Validate API Key</h2>
+    <form id="validate-api-key-form">
+        <input type="text" id="input-api-key" placeholder="Enter API Key" required />
+        <button type="submit">Validate API Key</button>
+    </form>
+    <div id="validation-result"></div>
+
     <script>
+        let generatedApiKey = '';  // Store the generated API key
+        let generatedBook = {};  // Store the book associated with the generated API key
+        let apiKeysArray = [];  // Array to hold all generated API keys with their associated books
+
         // Fetch the JSON data
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                // Get the books data from the JSON
+                // Display the books
                 const books = data.books;
                 const booksListDiv = document.getElementById('books-list');
 
-                // Loop through each book and display it
                 books.forEach(book => {
                     const bookDiv = document.createElement('div');
                     bookDiv.classList.add('book');
                     bookDiv.innerHTML = `<h3>${book.title}</h3><p>by ${book.author}</p>`;
                     booksListDiv.appendChild(bookDiv);
                 });
+
+                // Handle new book addition
+                const bookForm = document.getElementById('book-form');
+                bookForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const title = document.getElementById('book-title').value;
+                    const author = document.getElementById('book-author').value;
+
+                    // Add the new book to the list
+                    const newBookDiv = document.createElement('div');
+                    newBookDiv.classList.add('book');
+                    newBookDiv.innerHTML = `<h3>${title}</h3><p>by ${author}</p>`;
+                    booksListDiv.appendChild(newBookDiv);
+
+                    // Clear form fields
+                    document.getElementById('book-title').value = '';
+                    document.getElementById('book-author').value = '';
+                });
+
+                // Handle API Key Generation
+                const apiKeyButton = document.getElementById('generate-api-key');
+                apiKeyButton.addEventListener('click', () => {
+                    generatedApiKey = generateApiKey();
+                    generatedBook = generateBook(generatedApiKey);  // Generate a book linked to the API key
+
+                    // Add the API key and book to the apiKeys array in the JSON data
+                    apiKeysArray.push({
+                        key: generatedApiKey,
+                        book: generatedBook,
+                        description: "API Key for Book Management"
+                    });
+
+                    // Display the API key and associated book
+                    const apiKeyContainer = document.getElementById('api-key-container');
+                    const apiKeyDiv = document.createElement('div');
+                    apiKeyDiv.innerHTML = `<p>New API Key: <strong>${generatedApiKey}</strong></p>
+                                           <p>Associated Book: <strong>${generatedBook.title}</strong> by ${generatedBook.author}</p>`;
+                    apiKeyContainer.appendChild(apiKeyDiv);
+
+                    console.log("API Keys Array:", apiKeysArray);  // For debugging - will show the updated array in the console
+                });
+
+                // Handle API Key Validation
+                const validateApiKeyForm = document.getElementById('validate-api-key-form');
+                validateApiKeyForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const inputApiKey = document.getElementById('input-api-key').value;
+                    const validationResultDiv = document.getElementById('validation-result');
+                    
+                    // Check if the input API key matches any in the apiKeysArray
+                    const foundApiKey = apiKeysArray.find(api => api.key === inputApiKey);
+                    
+                    if (foundApiKey) {
+                        validationResultDiv.innerHTML = `<p style="color:green;">API Key is valid!</p>
+                                                        <p>Associated Book: <strong>${foundApiKey.book.title}</strong> by ${foundApiKey.book.author}</p>`;
+                    } else {
+                        validationResultDiv.innerHTML = '<p style="color:red;">Invalid API Key!</p>';
+                    }
+                    
+                    // Clear input field
+                    document.getElementById('input-api-key').value = '';
+                });
             })
             .catch(error => console.error('Error loading JSON:', error));
+
+        // Function to generate a new API key
+        function generateApiKey() {
+            return Math.random().toString(36).substr(2, 10);  // Random 10-character string
+        }
+
+        // Function to generate a book linked to the API key
+        function generateBook(apiKey) {
+            return {
+                title: `Book for API Key: ${apiKey}`,
+                author: `Author for ${apiKey}`
+            };
+        }
     </script>
 </body>
 </html>
