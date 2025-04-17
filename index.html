@@ -2,18 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cookie Clicker w/ JSON</title>
+  <title>Cookie Clicker w/ Shop</title>
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
+      background: #f3e5ab;
     }
     .cookie {
       width: 150px;
       cursor: pointer;
     }
+    .info, .items {
+      margin-top: 20px;
+    }
     button {
       margin: 5px;
+    }
+    #shopSidebar {
+      position: fixed;
+      top: 0;
+      right: -250px;
+      width: 250px;
+      height: 100%;
+      background: #333;
+      color: white;
+      padding: 20px;
+      transition: right 0.3s;
+    }
+    #shopSidebar.open {
+      right: 0;
+    }
+    .shop-item {
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -28,7 +49,13 @@
     <p>Stage: <span id="stage">1</span></p>
   </div>
 
-  <div id="itemsList"></div>
+  <button onclick="toggleShop()">Open Shop</button>
+
+  <div id="shopSidebar">
+    <h2>Shop</h2>
+    <div id="itemsList"></div>
+    <button onclick="toggleShop()">Close Shop</button>
+  </div>
 
   <script>
     let game = null;
@@ -39,6 +66,7 @@
       game = data;
       calculateCPS();
       updateUI();
+      updateShopVisibility();
     }
 
     function clickCookie() {
@@ -82,6 +110,20 @@
         cps += item.amountOwned * item.cps;
       });
       game.player.cookiesPerSecond = cps;
+    }
+
+    function toggleShop() {
+      game.shopOpen = !game.shopOpen;
+      updateShopVisibility();
+    }
+
+    function updateShopVisibility() {
+      const shopSidebar = document.getElementById("shopSidebar");
+      if (game.shopOpen) {
+        shopSidebar.classList.add("open");
+      } else {
+        shopSidebar.classList.remove("open");
+      }
     }
 
     setInterval(() => {
