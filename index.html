@@ -1,185 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Chatbot</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f5f5f5;
-    }
-    #chatbox {
-      width: 100%;
-      max-width: 500px;
-      margin: 20px auto;
-      padding: 10px;
-      background-color: #fff;
-      border-radius: 10px;
-      height: 400px;
-      overflow-y: scroll;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    #chatbox .user, #chatbox .ai {
-      margin-bottom: 15px;
-    }
-    #chatbox .user {
-      text-align: right;
-      color: #1e90ff;
-    }
-    #chatbox .ai {
-      text-align: left;
-      color: #28a745;
-    }
-    #input-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 10px;
-    }
-    #userInput {
-      width: 80%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    #sendBtn {
-      padding: 10px 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-left: 10px;
-    }
-    #sendBtn:hover {
-      background-color: #218838;
-    }
-    #sidebar {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 250px;
-      background-color: #fff;
-      padding: 20px;
-      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-      display: none;
-      border-radius: 10px 0 0 10px;
-      max-height: 100%;
-      overflow-y: auto;
-      z-index: 1000;
-    }
-    #sidebar ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    #sidebar li {
-      margin-bottom: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .chat-container {
+            background-color: white;
+            width: 400px;
+            height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        .chat-box .user-message,
+        .chat-box .ai-message {
+            margin-bottom: 20px;
+        }
+        .chat-box .user-message {
+            text-align: right;
+            color: #1e90ff;
+        }
+        .chat-box .ai-message {
+            text-align: left;
+            color: #28a745;
+        }
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #fff;
+        }
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .input-container button {
+            padding: 10px 20px;
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .input-container button:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="chatbox">
-    <!-- Chat messages will be dynamically added here -->
-  </div>
+<div class="chat-container">
+    <div class="chat-box" id="chatbox">
+        <!-- Chat messages will appear here -->
+    </div>
+    <div class="input-container">
+        <input type="text" id="userInput" placeholder="Type your message...">
+        <button id="sendBtn">Send</button>
+    </div>
+</div>
 
-  <div id="input-container">
-    <input type="text" id="userInput" placeholder="Ask me anything...">
-    <button id="sendBtn">Send</button>
-  </div>
-
-  <div id="sidebar">
-    <h3>Help</h3>
-    <ul id="helpList">
-      <!-- Help list items will be dynamically added here -->
-    </ul>
-  </div>
-
-  <script>
-    // Function to load JSON data (responses)
-    async function loadResponses() {
-      const response = await fetch('responses.json');
-      return await response.json();
-    }
-
+<script>
     // Function to append messages to the chatbox
     function appendMessage(sender, message) {
-      const chatbox = document.getElementById("chatbox");
-      const messageElement = document.createElement("div");
-      messageElement.classList.add(sender);
-      messageElement.textContent = message;
-      chatbox.appendChild(messageElement);
-      chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
+        const chatbox = document.getElementById("chatbox");
+        const messageElement = document.createElement("div");
+        messageElement.classList.add(sender);
+        messageElement.textContent = message;
+        chatbox.appendChild(messageElement);
+        chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
     }
 
-    // Function to toggle the help sidebar
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
-    }
-
-    // Function to get current time
-    function getCurrentTime() {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      const seconds = now.getSeconds();
-      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    }
-
-    // Function to handle basic calculations
-    function calculateMath(query) {
-      const sanitizedQuery = query.replace(/[^0-9+\-*/(). ]/g, ''); // Sanitize input to prevent code execution
-      try {
-        const result = eval(sanitizedQuery); // Use eval for basic math
-        return `The result is ${result}.`;
-      } catch (error) {
-        return "Sorry, I couldn't compute that. Please try again.";
-      }
-    }
-
-    // Function to handle user input and AI response
+    // Function to handle user input and get AI response
     async function handleUserInput() {
-      const userInput = document.getElementById("userInput").value.trim().toLowerCase();
-      if (userInput) {
-        appendMessage("user", userInput); // Display user message
+        const userInput = document.getElementById("userInput").value.trim();
+        if (userInput) {
+            appendMessage("user-message", userInput); // Display user message
+            document.getElementById("userInput").value = ''; // Clear input field
 
-        const responses = await loadResponses();
-        let aiResponse = responses.default; // Default response if no match
-
-        // Handle special cases for time, calculations, and help
-        if (userInput === "/help") {
-          aiResponse = "Here is a list of things you can ask me.";
-          toggleSidebar();
-        } else if (userInput.includes("what time is it")) {
-          const time = getCurrentTime();
-          aiResponse = responses["what time is it"].replace("{{time}}", time);
-        } else if (userInput.includes("calculate")) {
-          const calculationQuery = userInput.replace("calculate", "").trim();
-          aiResponse = calculateMath(calculationQuery);
-        } else if (responses[userInput]) {
-          aiResponse = responses[userInput];
+            try {
+                // Send user input to OpenAI API to get the AI response
+                const aiResponse = await getAIResponse(userInput);
+                appendMessage("ai-message", aiResponse); // Display AI response
+            } catch (error) {
+                appendMessage("ai-message", "Sorry, something went wrong. Please try again.");
+            }
         }
-
-        appendMessage("ai", aiResponse); // Display AI response
-      }
-      document.getElementById("userInput").value = ''; // Clear input field
     }
 
     // Event listener for the send button
     document.getElementById("sendBtn").addEventListener("click", handleUserInput);
 
     // Event listener for the Enter key
-    document.getElementById("userInput").addEventListener("keypress", function (event) {
-      if (event.key === "Enter") {
-        handleUserInput();
-      }
+    document.getElementById("userInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            handleUserInput();
+        }
     });
-  </script>
+
+    // Function to make an API request to OpenAI to get the AI response
+    async function getAIResponse(userMessage) {
+        const apiKey = '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';
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4.1",
+                messages: [{ role: 'user', content: userMessage }]
+            })
+        });
+
+        const data = await response.json();
+        return data.choices[0].message.content; // Return the AI's response
+    }
+</script>
 
 </body>
 </html>
