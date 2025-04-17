@@ -1,0 +1,18 @@
+{
+  "player": {
+    "cookies": 0,
+    "totalClicks": 0,
+    "cookiesPerSecond": 0,
+    "currentStage": 1
+  },
+  "items": [
+    { "id": "cursor", "name": "Cursor", "amountOwned": 0, "bought": 0, "baseCost": 15, "cps": 0.1 },
+    { "id": "grandma", "name": "Grandma", "amountOwned": 0, "bought": 0, "baseCost": 100, "cps": 1 },
+    { "id": "farm", "name": "Farm", "amountOwned": 0, "bought": 0, "baseCost": 500, "cps": 8 }
+  ],
+  "upgrades": [],
+  "stages": [
+    { "stageNumber": 1, "cookiesNeeded": 1000, "completed": false },
+    { "stageNumber": 2, "cookiesNeeded": 10000, "completed": false }
+  ]
+}
