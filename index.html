@@ -1,149 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cookie Clicker w/ Shop</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot</title>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      background: #f3e5ab;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
     }
-    .cookie {
-      width: 150px;
+    #chatbox {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 10px;
+      height: 400px;
+      overflow-y: scroll;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    #chatbox .user, #chatbox .ai {
+      margin-bottom: 15px;
+    }
+    #chatbox .user {
+      text-align: right;
+      color: #1e90ff;
+    }
+    #chatbox .ai {
+      text-align: left;
+      color: #28a745;
+    }
+    #input-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    #userInput {
+      width: 80%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    #sendBtn {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
+      font-size: 16px;
+      margin-left: 10px;
     }
-    .info, .items {
-      margin-top: 20px;
+    #sendBtn:hover {
+      background-color: #218838;
     }
-    button {
-      margin: 5px;
-    }
-    #shopSidebar {
+    #sidebar {
       position: fixed;
       top: 0;
-      right: -250px;
-      width: 250px;
-      height: 100%;
-      background: #333;
-      color: white;
-      padding: 20px;
-      transition: right 0.3s;
-    }
-    #shopSidebar.open {
       right: 0;
+      width: 250px;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+      display: none;
+      border-radius: 10px 0 0 10px;
+      max-height: 100%;
+      overflow-y: auto;
+      z-index: 1000;
     }
-    .shop-item {
+    #sidebar ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #sidebar li {
       margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>🍪 Cookie Clicker</h1>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/Cookie.png" class="cookie" onclick="clickCookie()" />
-  
-  <button onclick="toggleShop()">Open Shop</button>
-  <button onclick="toggleStats()">Show Stats</button>
 
-  <div class="info">
-    <p>Cookies: <span id="cookies">0</span></p>
-    <p>World: <span id="world">Candy Cookie World</span></p>
-    <p>Click Multiplier: <span id="clickMultiplier">1</span>x</p>
+  <div id="chatbox">
+    <!-- Chat messages will be dynamically added here -->
   </div>
 
-  <div id="statsSection" style="display: none;">
-    <div class="info">
-      <p>Clicks: <span id="clicks">0</span></p>
-      <p>CPS: <span id="cps">0</span></p>
-    </div>
+  <div id="input-container">
+    <input type="text" id="userInput" placeholder="Ask me anything...">
+    <button id="sendBtn">Send</button>
   </div>
 
-  <div id="shopSidebar">
-    <h2>Shop</h2>
-    <div id="itemsList"></div>
-    <h3>Upgrades</h3>
-    <div id="upgradesList"></div>
-    <h3>Worlds</h3>
-    <button onclick="goToWorld('Candy Cookie World')">Candy Cookie World</button>
-    <button onclick="goToWorld('Chocolate Land')">Chocolate Land</button>
+  <div id="sidebar">
+    <h3>Help</h3>
+    <ul id="helpList">
+      <!-- Help list items will be dynamically added here -->
+    </ul>
   </div>
 
   <script>
-    const data = {
-      "player": {
-        "cookies": 0,
-        "currentWorld": "Candy Cookie World",
-        "clickMultiplier": 1,
-        "worldsUnlocked": ["Candy Cookie World"]
-      },
-      "worlds": [
-        { "name": "Candy Cookie World", "unlocked": true, "clickMultiplier": 1 },
-        { "name": "Chocolate Land", "unlocked": false, "clickMultiplier": 1.5 }
-      ],
-      "items": [
-        { "id": "cursor", "name": "Cursor", "amountOwned": 0, "baseCost": 15, "cps": 0.1 },
-        { "id": "grandma", "name": "Grandma", "amountOwned": 0, "baseCost": 100, "cps": 1 }
-      ]
-    };
-
-    let currentWorld = data.player.currentWorld;
-    let upgradesList = [];
-    let itemsList = [];
-
-    function toggleShop() {
-      const sidebar = document.getElementById('shopSidebar');
-      sidebar.classList.toggle('open');
-      updateShop();
+    // Function to load JSON data (responses)
+    async function loadResponses() {
+      const response = await fetch('responses.json');
+      return await response.json();
     }
 
-    function toggleStats() {
-      const statsSection = document.getElementById('statsSection');
-      statsSection.style.display = statsSection.style.display === 'none' ? 'block' : 'none';
+    // Function to append messages to the chatbox
+    function appendMessage(sender, message) {
+      const chatbox = document.getElementById("chatbox");
+      const messageElement = document.createElement("div");
+      messageElement.classList.add(sender);
+      messageElement.textContent = message;
+      chatbox.appendChild(messageElement);
+      chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
     }
 
-    function updateShop() {
-      const itemsDiv = document.getElementById('itemsList');
-      const upgradesDiv = document.getElementById('upgradesList');
-      itemsDiv.innerHTML = '';
-      upgradesDiv.innerHTML = '';
-
-      // Display items
-      data.items.forEach(item => {
-        const itemElement = document.createElement('div');
-        itemElement.classList.add('shop-item');
-        itemElement.innerHTML = `${item.name} - Cost: ${item.baseCost} cookies`;
-        itemsDiv.appendChild(itemElement);
-      });
-
-      // Display upgrades for the current world
-      const world = data.worlds.find(w => w.name === currentWorld);
-      const upgrades = world ? world.upgrades : [];
-      upgrades.forEach(upgrade => {
-        const upgradeElement = document.createElement('div');
-        upgradeElement.classList.add('shop-item');
-        upgradeElement.innerHTML = `${upgrade.name} - Cost: ${upgrade.cost} cookies`;
-        upgradesDiv.appendChild(upgradeElement);
-      });
+    // Function to toggle the help sidebar
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
     }
 
-    function clickCookie() {
-      const cookies = document.getElementById('cookies');
-      data.player.cookies += 1 * data.player.clickMultiplier;
-      cookies.textContent = data.player.cookies;
+    // Function to get current time
+    function getCurrentTime() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
 
-    function goToWorld(worldName) {
-      const world = data.worlds.find(w => w.name === worldName);
-      if (world && world.unlocked) {
-        currentWorld = worldName;
-        data.player.currentWorld = worldName;
-        document.getElementById('world').textContent = worldName;
-        document.getElementById('clickMultiplier').textContent = world.clickMultiplier;
-        updateShop();
+    // Function to handle basic calculations
+    function calculateMath(query) {
+      const sanitizedQuery = query.replace(/[^0-9+\-*/(). ]/g, ''); // Sanitize input to prevent code execution
+      try {
+        const result = eval(sanitizedQuery); // Use eval for basic math
+        return `The result is ${result}.`;
+      } catch (error) {
+        return "Sorry, I couldn't compute that. Please try again.";
       }
     }
 
-    updateShop();
+    // Function to handle user input and AI response
+    async function handleUserInput() {
+      const userInput = document.getElementById("userInput").value.trim().toLowerCase();
+      if (userInput) {
+        appendMessage("user", userInput); // Display user message
+
+        const responses = await loadResponses();
+        let aiResponse = responses.default; // Default response if no match
+
+        // Handle special cases for time, calculations, and help
+        if (userInput === "/help") {
+          aiResponse = "Here is a list of things you can ask me.";
+          toggleSidebar();
+        } else if (userInput.includes("what time is it")) {
+          const time = getCurrentTime();
+          aiResponse = responses["what time is it"].replace("{{time}}", time);
+        } else if (userInput.includes("calculate")) {
+          const calculationQuery = userInput.replace("calculate", "").trim();
+          aiResponse = calculateMath(calculationQuery);
+        } else if (responses[userInput]) {
+          aiResponse = responses[userInput];
+        }
+
+        appendMessage("ai", aiResponse); // Display AI response
+      }
+      document.getElementById("userInput").value = ''; // Clear input field
+    }
+
+    // Event listener for the send button
+    document.getElementById("sendBtn").addEventListener("click", handleUserInput);
+
+    // Event listener for the Enter key
+    document.getElementById("userInput").addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        handleUserInput();
+      }
+    });
   </script>
+
 </body>
 </html>
