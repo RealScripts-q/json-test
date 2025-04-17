@@ -3,6 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .key-container { margin-top: 20px; }
+        .api-key { font-family: monospace; background-color: #f4f4f4; padding: 10px; border: 1px solid #ccc; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+    <h1>API Key Generator</h1>
+    <p>Click the button below to generate a new API key.</p>
+    <button id="generateKeyButton">Generate API Key</button>
+
+    <div class="key-container">
+        <p><strong>Generated API Key:</strong></p>
+        <div id="apiKey" class="api-key">No key generated yet.</div>
+    </div>
+
+    <script>
+        // Function to generate a random API key (32 characters)
+        function generateApiKey() {
+            return 'api_' + Math.random().toString(36).substr(2, 32);
+        }
+
+        // When the button is clicked, generate and store the key
+        document.getElementById('generateKeyButton').addEventListener('click', function() {
+            const newApiKey = generateApiKey();
+            
+            // Store the API key in local storage
+            let keys = JSON.parse(localStorage.getItem('apiKeys')) || [];
+            keys.push(newApiKey);
+            localStorage.setItem('apiKeys', JSON.stringify(keys));
+            
+            // Display the generated key
+            document.getElementById('apiKey').textContent = newApiKey;
+        });
+    </script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot</title>
     <style>
         body {
