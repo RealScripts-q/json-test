@@ -15,5 +15,6 @@
     { "stageNumber": 1, "cookiesNeeded": 1000, "completed": false },
     { "stageNumber": 2, "cookiesNeeded": 10000, "completed": false }
   ],
-  "shopOpen": false
+  "shopOpen": false,
+  "statsVisible": false
 }
