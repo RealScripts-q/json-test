@@ -1,157 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Creator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        input, button, select {
-            margin: 10px 0;
-            padding: 10px;
-            width: 100%;
-        }
-        .book-entry {
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .book-entry h3 {
-            margin: 0;
-        }
-        .book-entry p {
-            margin: 5px 0;
-        }
-        .status {
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Book Creator with JSON</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .hidden { display: none; }
+    .book-entry { margin: 10px 0; padding: 10px; border: 1px solid #ccc; cursor: pointer; }
+    #book-reader.fullscreen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: white; padding: 40px; overflow: auto; z-index: 999;
+    }
+  </style>
 </head>
 <body>
-    <h1>Book Creator</h1>
 
-    <!-- Book Creation Form -->
-    <form id="book-form">
-        <label for="book-title">Book Title:</label>
-        <input type="text" id="book-title" required />
+  <div id="creator">
+    <h1>Create Book</h1>
+    <input type="text" id="title" placeholder="Title" required><br>
+    <input type="text" id="author" placeholder="Author" required><br>
+    <textarea id="content" placeholder="Content..." rows="5" required></textarea><br>
 
-        <label for="book-author">Book Author:</label>
-        <input type="text" id="book-author" required />
+    <select id="visibility">
+      <option value="public">Public</option>
+      <option value="protected">Protected</option>
+    </select><br>
+    <input type="text" id="key" placeholder="API Key (for protected)" disabled><br>
 
-        <label for="book-content">Book Content:</label>
-        <textarea id="book-content" rows="6" required></textarea>
+    <button onclick="publishBook()">Publish</button>
+  </div>
 
-        <label for="publish-option">Publish As:</label>
-        <select id="publish-option" required>
-            <option value="public">Public</option>
-            <option value="protected">Protected (API Key Required)</option>
-        </select>
+  <div id="dashboard" class="hidden">
+    <h2>Your Dashboard</h2>
+    <div id="book-list"></div>
+  </div>
 
-        <label for="api-key">Set API Key (only if Protected):</label>
-        <input type="text" id="api-key" placeholder="Enter API Key" disabled />
+  <div id="book-reader" class="hidden fullscreen"></div>
 
-        <button type="submit">Publish Book</button>
-    </form>
+  <script>
+    let books = [];
 
-    <h2>Published Books</h2>
-    <div id="books-list"></div>
+    const keyInput = document.getElementById("key");
+    document.getElementById("visibility").addEventListener("change", e => {
+      keyInput.disabled = e.target.value !== "protected";
+    });
 
-    <h2>Read Book (Enter API Key if Protected)</h2>
-    <input type="text" id="input-api-key" placeholder="Enter API Key to Read Protected Book" />
-    <button id="read-book-btn">Read Book</button>
+    async function loadBooks() {
+      try {
+        const res = await fetch('books.json');
+        books = await res.json();
+        showDashboard();
+      } catch (e) {
+        console.error("Failed to load books.json", e);
+      }
+    }
 
-    <div id="read-book-result"></div>
+    async function publishBook() {
+      const title = document.getElementById("title").value;
+      const author = document.getElementById("author").value;
+      const content = document.getElementById("content").value;
+      const visibility = document.getElementById("visibility").value;
+      const apiKey = visibility === "protected" ? document.getElementById("key").value : null;
 
-    <script>
-        // Array to store books (simulated in the browser)
-        const books = [];
+      const book = {
+        title, author, content, visibility, apiKey
+      };
 
-        // Book Form and Submit Logic
-        document.getElementById("book-form").addEventListener("submit", function(event) {
-            event.preventDefault();
+      books.push(book);
 
-            const title = document.getElementById("book-title").value;
-            const author = document.getElementById("book-author").value;
-            const content = document.getElementById("book-content").value;
-            const publishOption = document.getElementById("publish-option").value;
-            const apiKey = document.getElementById("api-key").value;
-
-            // Create a book object
-            const book = {
-                title,
-                author,
-                content,
-                publishOption,
-                apiKey: publishOption === "protected" ? apiKey : null
-            };
-
-            // Add the book to the books array
-            books.push(book);
-
-            // Display the book in the books list
-            displayBooks();
-
-            // Clear the form
-            document.getElementById("book-form").reset();
-            document.getElementById("api-key").disabled = true;
+      try {
+        await fetch('books.json', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(books, null, 2)
         });
+        loadBooks();
+      } catch (e) {
+        console.error("Failed to save to books.json", e);
+      }
 
-        // Handle the read book functionality (with API key validation)
-        document.getElementById("read-book-btn").addEventListener("click", function() {
-            const inputApiKey = document.getElementById("input-api-key").value;
-            const readResultDiv = document.getElementById("read-book-result");
+      document.getElementById("creator").classList.add("hidden");
+    }
 
-            // Find the book that is protected or public
-            const selectedBook = books.find(book => book.apiKey === inputApiKey || book.publishOption === "public");
+    function showDashboard() {
+      const dash = document.getElementById("dashboard");
+      const list = document.getElementById("book-list");
+      dash.classList.remove("hidden");
+      list.innerHTML = '';
 
-            if (selectedBook) {
-                if (selectedBook.publishOption === "protected" && selectedBook.apiKey === inputApiKey) {
-                    readResultDiv.innerHTML = `<h3>${selectedBook.title}</h3><p>by ${selectedBook.author}</p><p>${selectedBook.content}</p>`;
-                } else if (selectedBook.publishOption === "public") {
-                    readResultDiv.innerHTML = `<h3>${selectedBook.title}</h3><p>by ${selectedBook.author}</p><p>${selectedBook.content}</p>`;
-                }
-            } else {
-                readResultDiv.innerHTML = '<p style="color:red;">API Key is invalid or book not found!</p>';
-            }
+      books.forEach((book, i) => {
+        const div = document.createElement("div");
+        div.className = "book-entry";
+        div.textContent = `${book.title} by ${book.author}`;
+        div.onclick = () => openBook(i);
+        list.appendChild(div);
+      });
+    }
 
-            // Clear the input API Key field
-            document.getElementById("input-api-key").value = '';
-        });
+    function openBook(index) {
+      const book = books[index];
+      if (book.visibility === "protected") {
+        const entered = prompt("Enter API Key:");
+        if (entered !== book.apiKey) return alert("Wrong key!");
+      }
 
-        // Function to display the list of published books
-        function displayBooks() {
-            const booksListDiv = document.getElementById("books-list");
-            booksListDiv.innerHTML = ''; // Clear the current list
+      const reader = document.getElementById("book-reader");
+      reader.innerHTML = `<h1>${book.title}</h1><h3>${book.author}</h3><p>${book.content}</p>`;
+      reader.classList.remove("hidden");
+      reader.classList.add("fullscreen");
 
-            books.forEach(book => {
-                const bookDiv = document.createElement("div");
-                bookDiv.classList.add("book-entry");
-
-                let status = book.publishOption === "public" ? "<span class='status' style='color:green;'>Public</span>" : `<span class='status' style='color:orange;'>Protected (API Key: ${book.apiKey})</span>`;
-
-                bookDiv.innerHTML = `
-                    <h3>${book.title}</h3>
-                    <p><strong>Author:</strong> ${book.author}</p>
-                    <p><strong>Status:</strong> ${status}</p>
-                `;
-                booksListDiv.appendChild(bookDiv);
-            });
+      document.addEventListener("keydown", e => {
+        if (e.key === "Escape") {
+          reader.classList.add("hidden");
+          reader.classList.remove("fullscreen");
         }
+      });
+    }
 
-        // Enable/Disable API Key input based on publish option
-        document.getElementById("publish-option").addEventListener("change", function() {
-            if (this.value === "protected") {
-                document.getElementById("api-key").disabled = false;
-            } else {
-                document.getElementById("api-key").disabled = true;
-            }
-        });
-    </script>
+    loadBooks();
+  </script>
 </body>
 </html>
