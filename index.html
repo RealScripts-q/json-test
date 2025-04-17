@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Book Creator with JSON</title>
+  <title>Book Creator</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     .hidden { display: none; }
@@ -15,93 +15,58 @@
 </head>
 <body>
 
-  <div id="creator">
-    <h1>Create Book</h1>
-    <input type="text" id="title" placeholder="Title" required><br>
-    <input type="text" id="author" placeholder="Author" required><br>
-    <textarea id="content" placeholder="Content..." rows="5" required></textarea><br>
+  <h1>Create a Book</h1>
+  <input type="text" id="title" placeholder="Title"><br>
+  <input type="text" id="author" placeholder="Author"><br>
+  <textarea id="content" placeholder="Book Content..." rows="5" cols="50"></textarea><br>
+  <select id="visibility">
+    <option value="public">Public</option>
+    <option value="protected">Protected</option>
+  </select><br>
+  <input type="text" id="key" placeholder="API Key (if protected)" disabled><br>
+  <button onclick="publishBook()">Publish Book</button>
 
-    <select id="visibility">
-      <option value="public">Public</option>
-      <option value="protected">Protected</option>
-    </select><br>
-    <input type="text" id="key" placeholder="API Key (for protected)" disabled><br>
-
-    <button onclick="publishBook()">Publish</button>
-  </div>
-
-  <div id="dashboard" class="hidden">
-    <h2>Your Dashboard</h2>
-    <div id="book-list"></div>
-  </div>
+  <hr>
+  <h2>Your Dashboard</h2>
+  <div id="dashboard"></div>
 
   <div id="book-reader" class="hidden fullscreen"></div>
 
   <script>
-    let books = [];
-
     const keyInput = document.getElementById("key");
     document.getElementById("visibility").addEventListener("change", e => {
       keyInput.disabled = e.target.value !== "protected";
     });
 
+    let bookData = { books: [], context: {} };
+
     async function loadBooks() {
       try {
-        const res = await fetch('books.json');
-        books = await res.json();
-        showDashboard();
-      } catch (e) {
-        console.error("Failed to load books.json", e);
+        const res = await fetch("books.json");
+        bookData = await res.json();
+        renderDashboard();
+      } catch (err) {
+        console.error("Failed to load books.json:", err);
       }
     }
 
-    async function publishBook() {
-      const title = document.getElementById("title").value;
-      const author = document.getElementById("author").value;
-      const content = document.getElementById("content").value;
-      const visibility = document.getElementById("visibility").value;
-      const apiKey = visibility === "protected" ? document.getElementById("key").value : null;
+    function renderDashboard() {
+      const dashboard = document.getElementById("dashboard");
+      dashboard.innerHTML = "";
 
-      const book = {
-        title, author, content, visibility, apiKey
-      };
-
-      books.push(book);
-
-      try {
-        await fetch('books.json', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(books, null, 2)
-        });
-        loadBooks();
-      } catch (e) {
-        console.error("Failed to save to books.json", e);
-      }
-
-      document.getElementById("creator").classList.add("hidden");
-    }
-
-    function showDashboard() {
-      const dash = document.getElementById("dashboard");
-      const list = document.getElementById("book-list");
-      dash.classList.remove("hidden");
-      list.innerHTML = '';
-
-      books.forEach((book, i) => {
-        const div = document.createElement("div");
-        div.className = "book-entry";
-        div.textContent = `${book.title} by ${book.author}`;
-        div.onclick = () => openBook(i);
-        list.appendChild(div);
+      bookData.books.forEach(book => {
+        const entry = document.createElement("div");
+        entry.className = "book-entry";
+        entry.textContent = `${book.title} by ${book.author}`;
+        entry.onclick = () => readBook(book);
+        dashboard.appendChild(entry);
       });
     }
 
-    function openBook(index) {
-      const book = books[index];
+    function readBook(book) {
       if (book.visibility === "protected") {
-        const entered = prompt("Enter API Key:");
-        if (entered !== book.apiKey) return alert("Wrong key!");
+        const input = prompt("Enter API Key:");
+        if (input !== book.apiKey) return alert("Wrong API key.");
       }
 
       const reader = document.getElementById("book-reader");
@@ -117,7 +82,45 @@
       });
     }
 
+    async function publishBook() {
+      const title = document.getElementById("title").value.trim();
+      const author = document.getElementById("author").value.trim();
+      const content = document.getElementById("content").value.trim();
+      const visibility = document.getElementById("visibility").value;
+      const apiKey = visibility === "protected" ? document.getElementById("key").value.trim() : "";
+
+      if (!title || !author || !content) return alert("Fill in all fields!");
+
+      const newBook = {
+        id: Date.now(),
+        title,
+        author,
+        content,
+        visibility,
+        apiKey,
+        publishedAt: new Date().toISOString()
+      };
+
+      bookData.books.push(newBook);
+      bookData.context.lastUpdated = new Date().toISOString();
+
+      try {
+        await fetch("books.json", {
+          method: "PUT", // json-server or server must support PUT
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bookData, null, 2)
+        });
+        renderDashboard();
+        alert("Book published successfully!");
+      } catch (err) {
+        console.error("Failed to write to books.json:", err);
+        alert("Note: Cannot save to books.json without a backend or json-server.");
+        renderDashboard(); // still add to UI
+      }
+    }
+
     loadBooks();
   </script>
+
 </body>
 </html>
