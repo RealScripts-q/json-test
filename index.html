@@ -42,14 +42,17 @@
   <h1>🍪 Cookie Clicker</h1>
   <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/Cookie.png" class="cookie" onclick="clickCookie()" />
   
-  <div class="info">
-    <p>Cookies: <span id="cookies">0</span></p>
-    <p>Clicks: <span id="clicks">0</span></p>
-    <p>CPS: <span id="cps">0</span></p>
-    <p>Stage: <span id="stage">1</span></p>
-  </div>
-
   <button onclick="toggleShop()">Open Shop</button>
+  <button onclick="toggleStats()">Show Stats</button>
+
+  <div id="statsSection" style="display: none;">
+    <div class="info">
+      <p>Cookies: <span id="cookies">0</span></p>
+      <p>Clicks: <span id="clicks">0</span></p>
+      <p>CPS: <span id="cps">0</span></p>
+      <p>Stage: <span id="stage">1</span></p>
+    </div>
+  </div>
 
   <div id="shopSidebar">
     <h2>Shop</h2>
@@ -67,6 +70,7 @@
       calculateCPS();
       updateUI();
       updateShopVisibility();
+      updateStatsVisibility();
     }
 
     function clickCookie() {
@@ -123,6 +127,20 @@
         shopSidebar.classList.add("open");
       } else {
         shopSidebar.classList.remove("open");
+      }
+    }
+
+    function toggleStats() {
+      game.statsVisible = !game.statsVisible;
+      updateStatsVisibility();
+    }
+
+    function updateStatsVisibility() {
+      const statsSection = document.getElementById("statsSection");
+      if (game.statsVisible) {
+        statsSection.style.display = "block";
+      } else {
+        statsSection.style.display = "none";
       }
     }
 
