@@ -12,5 +12,12 @@
       "title": "Moby Dick",
       "author": "Herman Melville"
     }
-  ]
+  ],
+  "creator": {
+    "book": {
+      "title": "New Book Title",
+      "author": "New Author"
+    },
+    "apiKeys": []
+  }
 }
