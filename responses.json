@@ -24,5 +24,6 @@
   "do you like music": "I don't have personal preferences, but I know a lot about music! What kind of music do you like?",
   "what is AI": "AI stands for Artificial Intelligence. It's a field of computer science focused on creating systems that can perform tasks that would typically require human intelligence.",
   "calculate": "Please provide the calculation you'd like me to solve.",
-  "calculate example": "For example, you can ask me to solve 'What is 5 plus 3?' or 'What is 10 times 7?'"
+  "calculate example": "For example, you can ask me to solve 'What is 5 plus 3?' or 'What is 10 times 7?'",
+  "help": "Here are some things you can ask me: \n1. 'What time is it?' \n2. 'What is 2 plus 2?' \n3. 'Tell me a joke' \n4. 'What is AI?' \n5. 'Can you help me?' \n6. 'Calculate [expression]' \n7. 'Good morning' \n8. 'Good evening' \n9. 'Bye'"
 }
