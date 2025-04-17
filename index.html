@@ -3,143 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Books List and API Key Creator</title>
+    <title>Book Creator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        .book {
+        input, button, select {
             margin: 10px 0;
             padding: 10px;
+            width: 100%;
+        }
+        .book-entry {
+            margin-top: 20px;
             border: 1px solid #ccc;
+            padding: 10px;
             border-radius: 5px;
         }
-        #api-key-container {
-            margin-top: 20px;
+        .book-entry h3 {
+            margin: 0;
         }
-        #validation-result {
-            margin-top: 10px;
+        .book-entry p {
+            margin: 5px 0;
+        }
+        .status {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Books List</h1>
+    <h1>Book Creator</h1>
+
+    <!-- Book Creation Form -->
+    <form id="book-form">
+        <label for="book-title">Book Title:</label>
+        <input type="text" id="book-title" required />
+
+        <label for="book-author">Book Author:</label>
+        <input type="text" id="book-author" required />
+
+        <label for="book-content">Book Content:</label>
+        <textarea id="book-content" rows="6" required></textarea>
+
+        <label for="publish-option">Publish As:</label>
+        <select id="publish-option" required>
+            <option value="public">Public</option>
+            <option value="protected">Protected (API Key Required)</option>
+        </select>
+
+        <label for="api-key">Set API Key (only if Protected):</label>
+        <input type="text" id="api-key" placeholder="Enter API Key" disabled />
+
+        <button type="submit">Publish Book</button>
+    </form>
+
+    <h2>Published Books</h2>
     <div id="books-list"></div>
 
-    <h2>Add a New Book</h2>
-    <form id="book-form">
-        <input type="text" id="book-title" placeholder="Book Title" required />
-        <input type="text" id="book-author" placeholder="Book Author" required />
-        <button type="submit">Add Book</button>
-    </form>
+    <h2>Read Book (Enter API Key if Protected)</h2>
+    <input type="text" id="input-api-key" placeholder="Enter API Key to Read Protected Book" />
+    <button id="read-book-btn">Read Book</button>
 
-    <h2>Generate API Key</h2>
-    <button id="generate-api-key">Generate API Key</button>
-    <div id="api-key-container"></div>
-
-    <h2>Validate API Key</h2>
-    <form id="validate-api-key-form">
-        <input type="text" id="input-api-key" placeholder="Enter API Key" required />
-        <button type="submit">Validate API Key</button>
-    </form>
-    <div id="validation-result"></div>
+    <div id="read-book-result"></div>
 
     <script>
-        let generatedApiKey = '';  // Store the generated API key
-        let generatedBook = {};  // Store the book associated with the generated API key
-        let apiKeysArray = [];  // Array to hold all generated API keys with their associated books
+        // Array to store books (simulated in the browser)
+        const books = [];
 
-        // Fetch the JSON data
-        fetch('data.json')
-            .then(response => response.json())
-            .then(data => {
-                // Display the books
-                const books = data.books;
-                const booksListDiv = document.getElementById('books-list');
+        // Book Form and Submit Logic
+        document.getElementById("book-form").addEventListener("submit", function(event) {
+            event.preventDefault();
 
-                books.forEach(book => {
-                    const bookDiv = document.createElement('div');
-                    bookDiv.classList.add('book');
-                    bookDiv.innerHTML = `<h3>${book.title}</h3><p>by ${book.author}</p>`;
-                    booksListDiv.appendChild(bookDiv);
-                });
+            const title = document.getElementById("book-title").value;
+            const author = document.getElementById("book-author").value;
+            const content = document.getElementById("book-content").value;
+            const publishOption = document.getElementById("publish-option").value;
+            const apiKey = document.getElementById("api-key").value;
 
-                // Handle new book addition
-                const bookForm = document.getElementById('book-form');
-                bookForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const title = document.getElementById('book-title').value;
-                    const author = document.getElementById('book-author').value;
-
-                    // Add the new book to the list
-                    const newBookDiv = document.createElement('div');
-                    newBookDiv.classList.add('book');
-                    newBookDiv.innerHTML = `<h3>${title}</h3><p>by ${author}</p>`;
-                    booksListDiv.appendChild(newBookDiv);
-
-                    // Clear form fields
-                    document.getElementById('book-title').value = '';
-                    document.getElementById('book-author').value = '';
-                });
-
-                // Handle API Key Generation
-                const apiKeyButton = document.getElementById('generate-api-key');
-                apiKeyButton.addEventListener('click', () => {
-                    generatedApiKey = generateApiKey();
-                    generatedBook = generateBook(generatedApiKey);  // Generate a book linked to the API key
-
-                    // Add the API key and book to the apiKeys array in the JSON data
-                    apiKeysArray.push({
-                        key: generatedApiKey,
-                        book: generatedBook,
-                        description: "API Key for Book Management"
-                    });
-
-                    // Display the API key and associated book
-                    const apiKeyContainer = document.getElementById('api-key-container');
-                    const apiKeyDiv = document.createElement('div');
-                    apiKeyDiv.innerHTML = `<p>New API Key: <strong>${generatedApiKey}</strong></p>
-                                           <p>Associated Book: <strong>${generatedBook.title}</strong> by ${generatedBook.author}</p>`;
-                    apiKeyContainer.appendChild(apiKeyDiv);
-
-                    console.log("API Keys Array:", apiKeysArray);  // For debugging - will show the updated array in the console
-                });
-
-                // Handle API Key Validation
-                const validateApiKeyForm = document.getElementById('validate-api-key-form');
-                validateApiKeyForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const inputApiKey = document.getElementById('input-api-key').value;
-                    const validationResultDiv = document.getElementById('validation-result');
-                    
-                    // Check if the input API key matches any in the apiKeysArray
-                    const foundApiKey = apiKeysArray.find(api => api.key === inputApiKey);
-                    
-                    if (foundApiKey) {
-                        validationResultDiv.innerHTML = `<p style="color:green;">API Key is valid!</p>
-                                                        <p>Associated Book: <strong>${foundApiKey.book.title}</strong> by ${foundApiKey.book.author}</p>`;
-                    } else {
-                        validationResultDiv.innerHTML = '<p style="color:red;">Invalid API Key!</p>';
-                    }
-                    
-                    // Clear input field
-                    document.getElementById('input-api-key').value = '';
-                });
-            })
-            .catch(error => console.error('Error loading JSON:', error));
-
-        // Function to generate a new API key
-        function generateApiKey() {
-            return Math.random().toString(36).substr(2, 10);  // Random 10-character string
-        }
-
-        // Function to generate a book linked to the API key
-        function generateBook(apiKey) {
-            return {
-                title: `Book for API Key: ${apiKey}`,
-                author: `Author for ${apiKey}`
+            // Create a book object
+            const book = {
+                title,
+                author,
+                content,
+                publishOption,
+                apiKey: publishOption === "protected" ? apiKey : null
             };
+
+            // Add the book to the books array
+            books.push(book);
+
+            // Display the book in the books list
+            displayBooks();
+
+            // Clear the form
+            document.getElementById("book-form").reset();
+            document.getElementById("api-key").disabled = true;
+        });
+
+        // Handle the read book functionality (with API key validation)
+        document.getElementById("read-book-btn").addEventListener("click", function() {
+            const inputApiKey = document.getElementById("input-api-key").value;
+            const readResultDiv = document.getElementById("read-book-result");
+
+            // Find the book that is protected or public
+            const selectedBook = books.find(book => book.apiKey === inputApiKey || book.publishOption === "public");
+
+            if (selectedBook) {
+                if (selectedBook.publishOption === "protected" && selectedBook.apiKey === inputApiKey) {
+                    readResultDiv.innerHTML = `<h3>${selectedBook.title}</h3><p>by ${selectedBook.author}</p><p>${selectedBook.content}</p>`;
+                } else if (selectedBook.publishOption === "public") {
+                    readResultDiv.innerHTML = `<h3>${selectedBook.title}</h3><p>by ${selectedBook.author}</p><p>${selectedBook.content}</p>`;
+                }
+            } else {
+                readResultDiv.innerHTML = '<p style="color:red;">API Key is invalid or book not found!</p>';
+            }
+
+            // Clear the input API Key field
+            document.getElementById("input-api-key").value = '';
+        });
+
+        // Function to display the list of published books
+        function displayBooks() {
+            const booksListDiv = document.getElementById("books-list");
+            booksListDiv.innerHTML = ''; // Clear the current list
+
+            books.forEach(book => {
+                const bookDiv = document.createElement("div");
+                bookDiv.classList.add("book-entry");
+
+                let status = book.publishOption === "public" ? "<span class='status' style='color:green;'>Public</span>" : `<span class='status' style='color:orange;'>Protected (API Key: ${book.apiKey})</span>`;
+
+                bookDiv.innerHTML = `
+                    <h3>${book.title}</h3>
+                    <p><strong>Author:</strong> ${book.author}</p>
+                    <p><strong>Status:</strong> ${status}</p>
+                `;
+                booksListDiv.appendChild(bookDiv);
+            });
         }
+
+        // Enable/Disable API Key input based on publish option
+        document.getElementById("publish-option").addEventListener("change", function() {
+            if (this.value === "protected") {
+                document.getElementById("api-key").disabled = false;
+            } else {
+                document.getElementById("api-key").disabled = true;
+            }
+        });
     </script>
 </body>
 </html>
